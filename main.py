@@ -16,13 +16,13 @@ def get_users(response: requests.Response) -> Dict[int, List[int]]:
         
         if res["assignee"]:
             if res["assignee"]["id"] in users.keys():
-                users[res["assignee"]["id"]].append(res["task_id"])
+                users[res["assignee"]["id"]].append(res["id"])
             else:
-                users[res["assignee"]["id"]] = [res["task_id"]]
+                users[res["assignee"]["id"]] = [res["id"]]
             continue
 
         # If the job is unassigned, append him to the unassigned key
-        users["Unassigned"].append(res["task_id"])
+        users["Unassigned"].append(res["id"])
 
     
     # Prints count of all jobs (also those that are unassigned).
@@ -36,7 +36,7 @@ def get_jobs(response: requests.Response) -> Dict[int, tuple[str, str, str]]:
     jobs: Dict[int, tuple[str, str, str]] = {}
 
     for res in response.json()["results"]:
-        jobs[res["task_id"]] = (res["status"], res["state"] ,res["type"])
+        jobs[res["id"]] = (res["status"], res["state"] ,res["type"])
 
     return jobs
 
