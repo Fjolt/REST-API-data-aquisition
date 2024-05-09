@@ -5,7 +5,7 @@ import logging
 
 CSV_FOLDER_NAME = 'csv_data'  # Name of the directory with csv files.
 # Where our local server is running.
-SERVER_URL = 'http://localhost:8080/api//jobs'
+SERVER_URL = 'http://localhost:8080/api/jobs'
 
 
 # Gets users based on jobs they are assigned to.
