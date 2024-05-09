@@ -6,7 +6,6 @@ import logging
 CSV_FOLDER_NAME = 'csv_data' # Name of the directory with csv files.
 SERVER_URL = 'http://localhost:8080/api/jobs' # Where our local server is running.
 
-
 # Gets users based on jobs they are assigned to.
 def get_users(response: requests.Response) -> Dict[int, List[int]]:
 
