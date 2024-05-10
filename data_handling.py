@@ -2,6 +2,8 @@ from typing import Dict, List
 import os
 import logging
 from enum import Enum
+import pandas as pd
+import matplotlib.pyplot as plt
 
 # User can switch between pretty formatting of the CSV file
 # and formatting for later processing
@@ -10,7 +12,7 @@ class UseOfData(Enum):
     USEFUL = 2
 
 PRETTY_CSV_FOLDER_NAME = 'csv_data_pretty'  # Name of the directory with pretty csv files.
-CSV_FOLDER_NAME = 'csv_data'  # Name of the directory with csv files.
+CSV_FOLDER_NAME = 'csv_data_statistics'  # Name of the directory with csv files.
 
 # Exports data in format chosen by thw user
 def export_data(use: UseOfData, users: Dict[int, List[int]],\
@@ -24,6 +26,25 @@ def export_data(use: UseOfData, users: Dict[int, List[int]],\
                 logging.error(f'Failed to create CSV file for user {user}')
                 logging.error(f'{str(e)}')
         return
+
+    csv_file = os.path.join(CSV_FOLDER_NAME, f'jobs.csv')
+
+    # Creates the folder if it doesn't exist
+    if not os.path.exists(csv_file):
+        os.makedirs(CSV_FOLDER_NAME)
+        logging.info(f"Folder '{CSV_FOLDER_NAME}' created successfully.")
+        with open(csv_file, 'w', newline='') as file:
+            file.write("")
+
+    for user in users.keys():
+        try:
+            create_csv(user, users[user], jobs)
+            logging.info(f"CSV lines added for user: {user}.")
+        except Exception as e:
+            logging.error(f'Failed to add lines for user {user}')
+            logging.error(f'{str(e)}')
+
+    compute_statistics(csv_file, 'Status')
 
 
 # Exports data about given user to a csv file in a human readable format.
@@ -57,25 +78,38 @@ def create_pretty_csv(user_id: int, user_jobs: List[int],
 def create_csv(user_id: int, user_jobs: List[int],
                jobs: Dict[int, tuple[str, str, str]]) -> None:
 
-    # Creates the folder if it doesn't exist
-    if not os.path.exists(CSV_FOLDER_NAME):
-        os.makedirs(CSV_FOLDER_NAME)
-        logging.info(f"Folder '{CSV_FOLDER_NAME}' created successfully.")
-
     lines: List[str] = []
 
-    lines.append(f'Jobs of the user {user_id} : \n')
-
     for i, job in enumerate(user_jobs):
-        new_line = f'\nJob number {i + 1} :\n' + \
-            f'    ID: {job},\n' + \
-            f'    State: {jobs[job][0]},\n' + \
-            f'    Status: {jobs[job][1]},\n' + \
-            f'    Type: {jobs[job][2]},\n'
+        new_line = f'{user_id},{i + 1},{job},{jobs[job][0]},{jobs[job][1]},{jobs[job][2]}\n'
         lines.append(new_line)
 
-    csv_file = os.path.join(PRETTY_CSV_FOLDER_NAME, f'user_{user_id}.csv')
+    csv_file = os.path.join(CSV_FOLDER_NAME, f'jobs.csv')
 
-    with open(csv_file, 'w', newline='') as file:
-        for line in lines:
-            file.write(line)
+    with open(csv_file, 'a', newline='') as file:
+        file.writelines(lines)
+
+
+def compute_statistics(csv_path: str, column: str):
+
+    # Pandas reads the csv file and saves it to a dataframe.
+    df = pd.read_csv(
+        csv_path,
+        header=0,
+        names=['user_id', 'Job_number', 'ID', 'State', 'Status', 'Type']
+    )
+
+    plt.clf()
+
+    # Plots a histogram from the loaded data.
+    plt.hist(df[column], bins=10, color='green', edgecolor='black')
+
+    # Adda labels and title to the histogram.
+    plt.xlabel('Values')
+    plt.ylabel('Frequency')
+    plt.title('Histogram of State')
+
+    # Saves the plot to a histogram_state.png file in csv_data_statistics folder
+    plt.savefig('csv_data_statistics/histogram_state.png')
+
+    print(df)
