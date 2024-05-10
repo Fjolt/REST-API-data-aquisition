@@ -1,66 +1,14 @@
-import requests
-from typing import Dict, List
-import os
 import logging
+import pygame
+import os
 
-CSV_FOLDER_NAME = 'csv_data'  # Name of the directory with csv files.
-# Where our local server is running.
-SERVER_URL = 'http://localhost:8080/api/jobs'
+from data_aquisition import load_data
+from data_handling import UseOfData, export_data, compute_statistics
+from interface import buttons_init
 
-
-# Gets users based on jobs they are assigned to.
-def get_users(response: requests.Response) -> Dict[int, List[int]]:
-
-    # Keys are user IDs and values are job IDs.
-    users: Dict[int, List[int]] = {}
-    users["Unassigned"] = []
-
-    for res in response.json()["results"]:
-
-        if res["assignee"]:
-            if res["assignee"]["id"] in users.keys():
-                users[res["assignee"]["id"]].append(res["id"])
-            else:
-                users[res["assignee"]["id"]] = [res["id"]]
-            continue
-
-        # If the job is unassigned, append him to the unassigned key
-        users["Unassigned"].append(res["id"])
-
-    return users
-
-
-# Gets basic information about jobs.
-def get_jobs(response: requests.Response) -> Dict[int, tuple[str, str, str]]:
-    # Keys are task IDs and each job is assigned Status, State and Type
-    jobs: Dict[int, tuple[str, str, str]] = {}
-
-    for res in response.json()["results"]:
-        jobs[res["id"]] = (res["status"], res["state"], res["type"])
-
-    return jobs
-
-
-# Exports data about given user to a csv file.
-def create_csv(user_id: int, user_jobs: List[int],
-               jobs: Dict[int, tuple[str, str, str]]) -> None:
-    lines: List[str] = []
-
-    lines.append(f'Jobs of the user {user_id} : \n')
-
-    for i, job in enumerate(user_jobs):
-        new_line = f'\nJob number {i + 1} :\n' + \
-            f'    ID: {job},\n' + \
-            f'    State: {jobs[job][0]},\n' + \
-            f'    Status: {jobs[job][1]},\n' + \
-            f'    Type: {jobs[job][2]},\n'
-        lines.append(new_line)
-
-    csv_file = os.path.join(CSV_FOLDER_NAME, f'user_{user_id}.csv')
-
-    with open(csv_file, 'w', newline='') as file:
-        for line in lines:
-            file.write(line)
+# Path to graph made from data and data for statistics
+IMAGE_PATH = "csv_data_statistics/graph.png"
+CSV_STAT_PATH = "csv_data_statistics/jobs.csv"
 
 
 def main() -> None:
@@ -71,37 +19,96 @@ def main() -> None:
         filename="logs.log"
     )
 
-    # Getting the data from locally running server and
-    # printing the status code.
-    response: requests.Response = requests.get(SERVER_URL)
-    logging.info(f'Response Status Code: {response.status_code}')
+    pygame.init()
+    logging.info('Interface initialised.')
 
-    if (response.status_code != 200):
-        logging.error(f'Unable to connect to {SERVER_URL}.')
-        logging.info('Finishing application.')
-        return
+    buttons = buttons_init()
+    screen = pygame.display.set_mode((800, 700))
+    pygame.display.set_caption("User Interface")
 
-    # Prints response in json format in logs if DEBUG mode enbled.
-    logging.debug(f"Response JSON Data:\n {response.json()}")
+    running: bool = True
 
-    # Some data preparation
-    users: Dict[int, List[int]] = get_users(response)
-    jobs: Dict[int, tuple[str, str, str]] = get_jobs(response)
+    graph_style = "bar" # Default graph style.
+    graph_col = "Status" # Default graph column.
 
-    # Creates the folder if it doesn't exist
-    if not os.path.exists(CSV_FOLDER_NAME):
-        os.makedirs(CSV_FOLDER_NAME)
-        logging.info(f"Folder '{CSV_FOLDER_NAME}' created successfully.")
+    while running:
+        screen.fill((0,0,0))
 
-    # Iterates through users and tries to create a file for each of them.
-    for user in users.keys():
-        try:
-            create_csv(user, users[user], jobs)
-            logging.info(f"CSV file created for user: {user}.")
-        except Exception as e:
-            logging.error(f'Failed to create CSV file for user {user}')
-            logging.error(f'{str(e)}')
+        if os.path.exists(IMAGE_PATH):
+            try:
+                image: pygame.Surface = pygame.image.load(IMAGE_PATH)
+                screen.blit(image, (100, 200))
+                logging.info("Graph succesfully loaded.")
+            except Exception as e:
+                logging.error('Failed to get the graph.')
+                logging.error(f'{str(e)}')
 
+        # Handle events in pygame.
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:  # Left mouse button
+                if buttons[0].rect.collidepoint(event.pos):
+                    # Button for pretty csv format creation
+                    users,jobs = load_data()
+                    logging.info("Exporting data to pretty csv...")
+                    try:
+                        export_data(UseOfData.PRETTY, users, jobs)
+                        logging.info("Pretty csvs have been exported")
+                    except Exception as e:
+                        running = False
+
+                elif buttons[1].rect.collidepoint(event.pos):
+                    # Button for statistics csv creation
+                    users,jobs = load_data()
+                    logging.info("Exporting data to csv...")
+                    try:
+                        export_data(UseOfData.USEFUL, users, jobs, graph_style)
+                        logging.info("Statistics have been updated.")
+                    except Exception as e:
+                        running = False
+                        logging.error(f'{str(e)}')
+
+                elif buttons[2].rect.collidepoint(event.pos):
+                    # Button to change GRAPH_STYLE to bar plot
+                    graph_style = "bar"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[3].rect.collidepoint(event.pos):
+                    # Button to change GRAPH_STYLE to line plot
+                    graph_style = "line"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[4].rect.collidepoint(event.pos):
+                    # Button to change graph_col to Status
+                    graph_col = "Status"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[5].rect.collidepoint(event.pos):
+                    # Button to change graph_col to State
+                    graph_col = "State"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[6].rect.collidepoint(event.pos):
+                    # Button to change graph_col to Type
+                    graph_col = "Type"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+        # Draws buttons in pygame window.
+        for button in buttons:
+            button.is_hovered = button.rect.collidepoint(pygame.mouse.get_pos())
+            button.draw(screen)
+
+        pygame.display.flip()
+
+    pygame.quit()
+
+    export_data(UseOfData.PRETTY, users, jobs)
 
 if __name__ == '__main__':
     main()

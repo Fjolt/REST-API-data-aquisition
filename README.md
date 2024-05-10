@@ -10,13 +10,14 @@ Client-side script that obtains information about all jobs and exports them into
 ## Requirements
 
 * Python 3.10.1 installed.
-* Libraries: requests, typing, os, logging, unittest
+* Libraries: requests, typing, os, logging, unittest, pygame, pandas, matplotlib
 * [Docker](https://www.docker.com/)
 
 ## Features implemented
 * Obtaining of information and export to CSV. CSV files are located in the csv_data which is created if nonexistent.
 * Logging using python logging library. The logs are written into logs.log file, which is automatically created after the first execution of the main.py program.
-* Basic test suite in tests.py. Unit tests are used to test 3 main functions from main.py.
+* Basic test suite in tests.py. Unit tests are used to test 3 main functions from data_aquistion.py and data_handling.py.
+* User-friendly interface to plot the aquired data with multiple choices of graphs and columns to choose data from.
 
 ## Quick start
 

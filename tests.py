@@ -1,5 +1,6 @@
 import unittest
-from main import get_jobs, get_users, create_csv, CSV_FOLDER_NAME
+from data_aquisition import get_jobs, get_users
+from data_handling import UseOfData, create_pretty_csv, PRETTY_CSV_FOLDER_NAME
 import os
 
 
@@ -43,7 +44,7 @@ class TestAPIScript(unittest.TestCase):
         }
         self.assertEqual(get_jobs(mock_response), expected_result)
 
-    def test_create_csv(self):
+    def test_create_pretty_csv(self):
         user_id = -1
         user_jobs = [1, 2]
         jobs = {
@@ -51,11 +52,11 @@ class TestAPIScript(unittest.TestCase):
             2: ("validation", "in progress", "ground_truth")
         }
 
-        if not os.path.exists(CSV_FOLDER_NAME):
-            os.makedirs(CSV_FOLDER_NAME)
+        if not os.path.exists(PRETTY_CSV_FOLDER_NAME):
+            os.makedirs(PRETTY_CSV_FOLDER_NAME)
 
-        create_csv(user_id, user_jobs, jobs)
-        csv_file = os.path.join(CSV_FOLDER_NAME, f'user_{-1}.csv')
+        create_pretty_csv(user_id, user_jobs, jobs)
+        csv_file = os.path.join(PRETTY_CSV_FOLDER_NAME, f'user_{-1}.csv')
         self.assertEqual(os.path.exists(csv_file), True)
 
         expected_lines = [f'Jobs of the user {-1} : \n', '\n',
