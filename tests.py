@@ -2,12 +2,14 @@ import unittest
 from main import get_jobs, get_users, create_csv, CSV_FOLDER_NAME
 import os
 
+
 class MockResponse:
     def __init__(self, json_data):
         self.json_data = json_data
 
     def json(self):
         return self.json_data
+
 
 class TestAPIScript(unittest.TestCase):
 
@@ -28,8 +30,10 @@ class TestAPIScript(unittest.TestCase):
     def test_get_jobs(self):
         mock_response = MockResponse({
             "results": [
-                {"id": 1, "status": "validation", "state": "completed", "type": "annotation"},
-                {"id": 2, "status": "validation", "state": "in progress", "type": "ground_truth"}
+                {"id": 1, "status": "validation", "state":
+                 "completed", "type": "annotation"},
+                {"id": 2, "status": "validation", "state":
+                 "in progress", "type": "ground_truth"}
             ]
         })
 
@@ -53,6 +57,21 @@ class TestAPIScript(unittest.TestCase):
         create_csv(user_id, user_jobs, jobs)
         csv_file = os.path.join(CSV_FOLDER_NAME, f'user_{-1}.csv')
         self.assertEqual(os.path.exists(csv_file), True)
+
+        expected_lines = [f'Jobs of the user {-1} : \n', '\n',
+                          f'Job number {1} :\n', f'    ID: {1},\n',
+                          '    State: validation,\n',
+                          '    Status: completed,\n',
+                          '    Type: annotation,\n']
+
+        expected_lines += ['\n', f'Job number {2} :\n', f'    ID: {2},\n',
+                           '    State: validation,\n',
+                           '    Status: in progress,\n',
+                           '    Type: ground_truth,\n']
+
+        with open(csv_file, 'r', newline='') as file:
+            for line in expected_lines:
+                self.assertEqual(file.readline(), line)
 
 
 if __name__ == '__main__':
