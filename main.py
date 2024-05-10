@@ -6,7 +6,7 @@ from data_aquisition import load_data
 from data_handling import UseOfData, export_data, compute_statistics
 from interface import buttons_init
 
-# Path to histogram made from data
+# Path to graph made from data and data for statistics
 IMAGE_PATH = "csv_data_statistics/graph.png"
 CSV_STAT_PATH = "csv_data_statistics/jobs.csv"
 
@@ -28,7 +28,7 @@ def main() -> None:
 
     running: bool = True
     graph_style = "bar"
-    graph_col1 = "Status"
+    graph_col = "Status"
 
     while running:
         screen.fill((0,0,0))
@@ -36,10 +36,10 @@ def main() -> None:
         if os.path.exists(IMAGE_PATH):
             try:
                 image: pygame.Surface = pygame.image.load(IMAGE_PATH)
-                screen.blit(image, (50, 200))
-                logging.info("Graph succesfully loaded and resized.")
+                screen.blit(image, (100, 200))
+                logging.info("Graph succesfully loaded.")
             except Exception as e:
-                logging.error('Failed to get or resize the graph.')
+                logging.error('Failed to get the graph.')
                 logging.error(f'{str(e)}')
 
         # Handle events in pygame.
@@ -69,16 +69,34 @@ def main() -> None:
                         logging.error(f'{str(e)}')
 
                 elif buttons[2].rect.collidepoint(event.pos):
-                    # Button to change GRAPH_STYLE to histogram
+                    # Button to change GRAPH_STYLE to bar plot
                     graph_style = "bar"
                     if os.path.exists(IMAGE_PATH):
-                        compute_statistics(CSV_STAT_PATH, graph_col1, graph_style)
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
 
                 elif buttons[3].rect.collidepoint(event.pos):
                     # Button to change GRAPH_STYLE to line plot
                     graph_style = "line"
                     if os.path.exists(IMAGE_PATH):
-                        compute_statistics(CSV_STAT_PATH, graph_col1, graph_style)
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[4].rect.collidepoint(event.pos):
+                    # Button to change graph_col to Status
+                    graph_col = "Status"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[5].rect.collidepoint(event.pos):
+                    # Button to change graph_col to State
+                    graph_col = "State"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
+
+                elif buttons[6].rect.collidepoint(event.pos):
+                    # Button to change graph_col to Type
+                    graph_col = "Type"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col, graph_style)
 
         # Draws buttons in pygame window.
         for button in buttons:
