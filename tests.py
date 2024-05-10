@@ -54,6 +54,21 @@ class TestAPIScript(unittest.TestCase):
         csv_file = os.path.join(CSV_FOLDER_NAME, f'user_{-1}.csv')
         self.assertEqual(os.path.exists(csv_file), True)
 
+        expected_lines = [f'Jobs of the user {-1} : \n', '\n',\
+                          f'Job number {1} :\n', f'    ID: {1},\n',\
+                              f'    State: validation,\n',\
+                               f'    Status: completed,\n', \
+                                f'    Type: annotation,\n']
+
+        expected_lines += ['\n',f'Job number {2} :\n', f'    ID: {2},\n',\
+                              f'    State: validation,\n',\
+                               f'    Status: in progress,\n', \
+                                f'    Type: ground_truth,\n']
+
+        with open(csv_file, 'r', newline='') as file:
+            for line in expected_lines:
+                self.assertEqual(file.readline(), line)
+
 
 if __name__ == '__main__':
     unittest.main()
