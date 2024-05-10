@@ -100,6 +100,7 @@ def compute_statistics(csv_path: str, column: str, graph_style:str):
         header=0,
         names=['user_id', 'Job_number', 'ID', 'State', 'Status', 'Type']
     )
+    logging.debug(df)
 
     plt.clf()
 
@@ -116,3 +117,4 @@ def compute_statistics(csv_path: str, column: str, graph_style:str):
 
     # Saves the plot to a graph.png file in csv_data_statistics folder
     plt.savefig('csv_data_statistics/graph.png')
+    logging.info("Graph succesfully plotted and saved.")
