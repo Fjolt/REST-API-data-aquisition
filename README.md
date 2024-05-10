@@ -10,8 +10,13 @@ Client-side script that obtains information about all jobs and exports them into
 ## Requirements
 
 * Python 3.10.1 installed.
-* Libraries: requests, typing
+* Libraries: requests, typing, os, logging, unittest
 * [Docker](https://www.docker.com/)
+
+## Features implemented
+* Obtaining of information and export to CSV. CSV files are located in the csv_data which is created if nonexistent.
+* Logging using python logging library. The logs are written into logs.log file, which is automatically created after the first execution of the main.py program.
+* Basic test suite in tests.py. Unit tests are used to test 3 main functions from main.py.
 
 ## Quick start
 
@@ -24,4 +29,8 @@ docker run -p 8080:8080 -e "OPENAPI_MOCK_SPECIFICATION_URL=https://app.cvat.ai/a
 
 # Test that the server is running.
 curl 'http://localhost:8080/api/jobs'
+
+# Lastly try to run the python program to see the magic.
+# Make sure you are in the correct directory before running.
+python main.py
 ```
