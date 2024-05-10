@@ -106,14 +106,13 @@ def compute_statistics(csv_path: str, column: str, graph_style:str):
     value_counts = df[column].value_counts()
     value_counts.plot(kind=graph_style)
 
-    # Adda labels and title to the graph.
+    # Adds labels and title to the graph.
     plt.xlabel(column)
     plt.ylabel("Frequency")
     plt.title(f'{graph_style} plot of {column}')
 
+    # Rotates the text so that it fits better.
     plt.xticks(rotation=0)
 
     # Saves the plot to a graph.png file in csv_data_statistics folder
     plt.savefig('csv_data_statistics/graph.png')
-
-    print(df)

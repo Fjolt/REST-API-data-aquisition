@@ -30,7 +30,11 @@ class Button:
         screen.blit(text_surface, text_rect)
 
 
+# Initializes all buttons used in our interface
+# There are 3 types: export choice, graph choice and coumn choice.
 def buttons_init() -> List[Button]:
+    # Main big buttons to choose the way of export.
+    # These trigger data aqusition.
     button1 = Button("Create pretty CSV files")
     button2 = Button("Get data for statistics", position=(CSV_CHOICE_X, CSV_CHOICE_Y + 100))
 
@@ -40,6 +44,7 @@ def buttons_init() -> List[Button]:
     graph_choice_x = CSV_CHOICE_X + CSV_CHOICE_WIDTH  + 50
     graph_choice_color = (50, 0, 200)
 
+    # Smaller buttons to choose the type of the graph.
     button_small1 = Button("Bar plot", (graph_choice_x, CSV_CHOICE_Y),
                            height=button_small_height, width=button_small_width, text_size=25,
                            color=graph_choice_color)
@@ -50,6 +55,7 @@ def buttons_init() -> List[Button]:
     column_choice_x = graph_choice_x + button_small_width  + 50
     column_choice_color = (100, 0, 50)
 
+    # Smaller buttons to choose which column to take the data from.
     button_small3 = Button("Status", (column_choice_x, CSV_CHOICE_Y),
                            height=button_small_height, width=button_small_width, text_size=25,
                            color=column_choice_color)

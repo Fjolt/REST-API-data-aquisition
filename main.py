@@ -27,8 +27,9 @@ def main() -> None:
     pygame.display.set_caption("User Interface")
 
     running: bool = True
-    graph_style = "bar"
-    graph_col = "Status"
+
+    graph_style = "bar" # Default graph style.
+    graph_col = "Status" # Default graph column.
 
     while running:
         screen.fill((0,0,0))
