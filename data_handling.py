@@ -14,9 +14,11 @@ class UseOfData(Enum):
 PRETTY_CSV_FOLDER_NAME = 'csv_data_pretty'  # Name of the directory with pretty csv files.
 CSV_FOLDER_NAME = 'csv_data_statistics'  # Name of the directory with csv files.
 
+
 # Exports data in format chosen by thw user
 def export_data(use: UseOfData, users: Dict[int, List[int]],\
-                jobs: Dict[int, tuple[str, str, str]]) -> None:
+                jobs: Dict[int, tuple[str, str, str]],
+                graph_style: str="hist", col1: str = "Status", col2: str="frequency") -> None:
     if use == UseOfData.PRETTY:
         for user in users.keys():
             try:
@@ -44,7 +46,7 @@ def export_data(use: UseOfData, users: Dict[int, List[int]],\
             logging.error(f'Failed to add lines for user {user}')
             logging.error(f'{str(e)}')
 
-    compute_statistics(csv_file, 'Status')
+    compute_statistics(csv_file, 'Status', graph_style)
 
 
 # Exports data about given user to a csv file in a human readable format.
@@ -90,7 +92,7 @@ def create_csv(user_id: int, user_jobs: List[int],
         file.writelines(lines)
 
 
-def compute_statistics(csv_path: str, column: str):
+def compute_statistics(csv_path: str, column1: str, graph_style:str):
 
     # Pandas reads the csv file and saves it to a dataframe.
     df = pd.read_csv(
@@ -101,15 +103,17 @@ def compute_statistics(csv_path: str, column: str):
 
     plt.clf()
 
-    # Plots a histogram from the loaded data.
-    plt.hist(df[column], bins=10, color='green', edgecolor='black')
+    value_counts = df[column1].value_counts()
+    value_counts.plot(kind=graph_style)
 
     # Adda labels and title to the histogram.
-    plt.xlabel('Values')
-    plt.ylabel('Frequency')
-    plt.title('Histogram of State')
+    plt.xlabel(column1)
+    plt.ylabel("Frequency")
+    plt.title(f'{graph_style} plot of {column1}')
+
+    plt.xticks(rotation=0)
 
     # Saves the plot to a histogram_state.png file in csv_data_statistics folder
-    plt.savefig('csv_data_statistics/histogram_state.png')
+    plt.savefig('csv_data_statistics/graph.png')
 
     print(df)

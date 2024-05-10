@@ -3,11 +3,12 @@ import pygame
 import os
 
 from data_aquisition import load_data
-from data_handling import UseOfData, export_data
-from interface import Button
+from data_handling import UseOfData, export_data, compute_statistics
+from interface import buttons_init
 
 # Path to histogram made from data
-IMAGE_PATH = 'csv_data_statistics/histogram_state.png'
+IMAGE_PATH = "csv_data_statistics/graph.png"
+CSV_STAT_PATH = "csv_data_statistics/jobs.csv"
 
 
 def main() -> None:
@@ -19,24 +20,29 @@ def main() -> None:
     )
 
     pygame.init()
-    button1 = Button("Create pretty CSV files", (100, 100))
-    button2 = Button("Get data for statistics", (100, 200))
+    logging.info('Interface initialised.')
 
-    buttons = [button1, button2]
+    buttons = buttons_init()
     screen = pygame.display.set_mode((800, 700))
     pygame.display.set_caption("User Interface")
 
     running: bool = True
+    graph_style = "bar"
+    graph_col1 = "Status"
 
     while running:
         screen.fill((0,0,0))
 
         if os.path.exists(IMAGE_PATH):
-            image: pygame.Surface = pygame.image.load(IMAGE_PATH)
-            resized_img: pygame.Surface = pygame.transform.scale(image, (500, 350))
-            screen.blit(resized_img, (100, 300))
+            try:
+                image: pygame.Surface = pygame.image.load(IMAGE_PATH)
+                screen.blit(image, (50, 200))
+                logging.info("Graph succesfully loaded and resized.")
+            except Exception as e:
+                logging.error('Failed to get or resize the graph.')
+                logging.error(f'{str(e)}')
 
-        # Handle events
+        # Handle events in pygame.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -44,14 +50,37 @@ def main() -> None:
                 if buttons[0].rect.collidepoint(event.pos):
                     # Button for pretty csv format creation
                     users,jobs = load_data()
-                    export_data(UseOfData.PRETTY, users, jobs)
+                    logging.info("Exporting data to pretty csv...")
+                    try:
+                        export_data(UseOfData.PRETTY, users, jobs)
+                        logging.info("Pretty csvs have been exported")
+                    except Exception as e:
+                        running = False
 
                 elif buttons[1].rect.collidepoint(event.pos):
                     # Button for statistics csv creation
                     users,jobs = load_data()
-                    export_data(UseOfData.USEFUL, users, jobs)
+                    logging.info("Exporting data to csv...")
+                    try:
+                        export_data(UseOfData.USEFUL, users, jobs, graph_style)
+                        logging.info("Statistics have been updated.")
+                    except Exception as e:
+                        running = False
+                        logging.error(f'{str(e)}')
 
-        # Draw buttons
+                elif buttons[2].rect.collidepoint(event.pos):
+                    # Button to change GRAPH_STYLE to histogram
+                    graph_style = "bar"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col1, graph_style)
+
+                elif buttons[3].rect.collidepoint(event.pos):
+                    # Button to change GRAPH_STYLE to line plot
+                    graph_style = "line"
+                    if os.path.exists(IMAGE_PATH):
+                        compute_statistics(CSV_STAT_PATH, graph_col1, graph_style)
+
+        # Draws buttons in pygame window.
         for button in buttons:
             button.is_hovered = button.rect.collidepoint(pygame.mouse.get_pos())
             button.draw(screen)
